@@ -93,6 +93,10 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
             - name: NAMESPACE
               valueFrom:
                 fieldRef:
@@ -118,7 +122,7 @@ spec:
               CONSUL_FULLNAME="{{template "consul.fullname" . }}"
 
               exec /bin/consul agent \
-                -advertise="${POD_IP}" \
+                -advertise="${HOST_IP}" \
                 -bind=0.0.0.0 \
                 -bootstrap-expect={{ .Values.server.bootstrapExpect }} \
                 {{- if .Values.global.tls.enabled }}
@@ -189,22 +193,29 @@ spec:
           ports:
             {{- if (or (not .Values.global.tls.enabled) (not .Values.global.tls.httpsOnly)) }}
             - containerPort: 8500
+              hostPort: 8500
               name: http
             {{- end }}
             {{- if .Values.global.tls.enabled }}
             - containerPort: 8501
+              hostPort: 8501
               name: https
             {{- end }}
             - containerPort: 8301
+              hostPort: 8301
               name: serflan
             - containerPort: 8302
+              hostPort: 8302
               name: serfwan
             - containerPort: 8300
+              hostPort: 8300
               name: server
             - containerPort: 8600
+              hostPort: 8600
               name: dns-tcp
               protocol: "TCP"
             - containerPort: 8600
+              hostPort: 8600
               name: dns-udp
               protocol: "UDP"
           readinessProbe:
